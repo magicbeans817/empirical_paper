@@ -59,7 +59,7 @@ data %>%
 
 
 
-
+#Tohle jsou jen nejaky moje poznamky, co pak smazu
 
 install.packages("plm")
 library("plm")

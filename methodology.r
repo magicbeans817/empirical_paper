@@ -48,8 +48,15 @@ data %>%
 
 #SECTION 2 ################################################################################
 
-#Here we will do some actual modelling. 
+#Here we will do some actual modelling. We choose generalized linear model due to binary
+#nature of our response variable.
+#As we have shown before, only 12.6% of our observations do not suffer from lung cancer.
+#Therefore we choose logit, as it has fatter tails and is better at modelling outliers.
+model <- glm(LUNG_CANCER ~ ., data = data, family = binomial(link = "logit")) #model
+summary(model) #summary
 
+#Some of our variables did not prove themselves to be significant.
+#However, many of these variables  
 
 
 

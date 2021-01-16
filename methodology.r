@@ -52,11 +52,21 @@ data %>%
 #nature of our response variable.
 #As we have shown before, only 12.6% of our observations do not suffer from lung cancer.
 #Therefore we choose logit, as it has fatter tails and is better at modelling outliers.
-model <- glm(LUNG_CANCER ~  ., data = data, family = binomial(link = "logit")) #model
-summary(model) #summary
+
+#Let's create formula for our model:
+flipitydopity <- c("GENDER","AGE", "SMOKING","YELLOW_FINGERS","ANXIETY","PEER_PRESSURE",
+                   "CHRONIC.DISEASE","FATIGUE","ALLERGY","WHEEZING","ALCOHOL.CONSUMING",
+                   "COUGHING","SHORTNESS.OF.BREATH","SWALLOWING.DIFFICULTY","CHEST.PAIN")
+
+fmla <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity, collapse= "+")))
+fmla
+
+#The model
+model1 <- glm(fmla, data = data, family = binomial(link = "logit")) #model
+summary(model1) #summary
 
 #Some of our variables did not prove themselves to be significant.
-#However, many of these variables are connected to each other, thefore we will now consider
+#However, many of these variables are connected to each other, therefore we will now consider
 #adjusting our model and adding interactions between variables. We can also substract several
 #variables as insignificant. For example, gender does not seem to play a significant role
 #in matter of having cancer. Also anxiety might be connected to lung cancer, however it makes
@@ -64,17 +74,49 @@ summary(model) #summary
 #from anxiety than from lung cancer.
 #Also multicollinearity between e.g. smoking and yellow fingers
 
-#Let's create formula for new model:
-flipitydopity <- c("GENDERM",
-                   "AGE", 
-                   "SMOKING",
-                   )
-fmla <- as.formula(paste("Propability ~", paste(flipitydopity, collapse= "+")))
-fmla
+
+#Lets make a vector of variables we will exclude:
+exclude <- c("ANXIETY","WHEEZING","SHORTNESS.OF.BREATH","CHEST.PAIN","GENDER","AGE")
+flipitydopity2 <- flipitydopity[!flipitydopity %in% exclude]
+flipitydopity2
+
+
+#New formula:
+fmla2 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity2, collapse= "+")))
+fmla2
+
+#New model
+model2 <- glm(fmla2, data = data, family = binomial(link = "logit")) #model with interactions
+summary(model2)
+
+#Lets add interactions:
+interactions <- c("SMOKING:YELLOW_FINGERS","SMOKING:PEER_PRESSURE",
+                  "SMOKING:ALCOHOL.CONSUMING","SMOKING:COUGHING",
+                  "SMOKING:SWALLOWING.DIFFICULTY","CHRONIC.DISEASE:FATIGUE")
+flipitydopity3 <- c(flipitydopity2, interactions)
+fmla3 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity3, collapse= "+")))
+model3 <- glm(fmla3, data = data, family = binomial(link = "logit")) #model with interactions
+summary(model3)
+
+#DAVIDE, TOHLE JE V PRDELI, TA DATA AZ DOTED ANI V JENDOM OHLEDU NEFUNGOVALA TAK,
+#JAK BY MELA. a DO TOHO VSEHO JA MOC NEROZUMIM EKONOMETRII
 
 
 
 
+
+
+
+
+
+#DONT RUN!!!!
+#dalsi moje hovna, co mozna pouziju
+predictions <- predict.glm(model2, data, type = "response" )
+sort(predictions)
+summary(predictions)
+
+install.packages("MASS")
+library(MASS)
 
 
 

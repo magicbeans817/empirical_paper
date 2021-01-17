@@ -2,6 +2,8 @@
 
 setwd("C:/Users/Honza/Desktop/Empirical_paper/Lung_cancer") #set your working directory
 data <- read.csv("survey_lung_cancerdata.csv") #load the data
+data <- read.csv("lung-cancer.data") #load the data
+#data <- read.csv("survey_lung_cancer.csv") #load the data
 #View(data) #take a look at the data
 #install.packages("dplyr") #install dplyr, if you do not have it installed
 library(dplyr) #load the package
@@ -90,9 +92,11 @@ model2 <- glm(fmla2, data = data, family = binomial(link = "logit")) #model with
 summary(model2)
 
 #Lets add interactions:
-interactions <- c("SMOKING:YELLOW_FINGERS","SMOKING:PEER_PRESSURE",
-                  "SMOKING:ALCOHOL.CONSUMING","SMOKING:COUGHING",
-                  "SMOKING:SWALLOWING.DIFFICULTY","CHRONIC.DISEASE:FATIGUE")
+interactions <- c()
+#interactions <- c("SMOKING:YELLOW_FINGERS"#,#"SMOKING:PEER_PRESSURE",
+                  #"SMOKING:ALCOHOL.CONSUMING","SMOKING:COUGHING"#,
+                  #"SMOKING:SWALLOWING.DIFFICULTY"#,"CHRONIC.DISEASE:FATIGUE"
+                  #)
 flipitydopity3 <- c(flipitydopity2, interactions)
 fmla3 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity3, collapse= "+")))
 model3 <- glm(fmla3, data = data, family = binomial(link = "logit")) #model with interactions

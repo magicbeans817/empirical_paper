@@ -2,7 +2,6 @@
 
 setwd("C:/Users/Honza/Desktop/Empirical_paper/Lung_cancer") #set your working directory
 data <- read.csv("survey_lung_cancerdata.csv") #load the data
-data <- read.csv("lung-cancer.data") #load the data
 #data <- read.csv("survey_lung_cancer.csv") #load the data
 #View(data) #take a look at the data
 #install.packages("dplyr") #install dplyr, if you do not have it installed

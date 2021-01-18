@@ -36,22 +36,23 @@ data %>% #counts number of observations with and without cancer
 data %>%
   count(SMOKING, wt = LUNG_CANCER)
 
-#Tajna myskavec na delani ala texovych tabulek
-install.packages(xtable)
-library(xtable)
+
 #We can put these two together:
 tabulka <- data %>%
   count(SMOKING, LUNG_CANCER)
+
 #print the table, so we can put it in the paper
+#Tajna myskavec na delani ala texovych tabulek
+#install.packages(xtable)
+library(xtable)
 tabulka <- as.matrix(tabulka)
 pocet <- as.numeric(as.vector(tabulka[,"n"]))
 tabulka1 <- matrix(pocet, nrow = 2, ncol = 2, byrow = TRUE,
                       dimnames = list(c("Non-smokers","Smokers"),c("Cancer-free","Cancer")))
 tabulka1 <- as.data.frame(tabulka1)
 tabulka1
-#pocet[1],pocet[2],pocet[3],pocet[4]
 print(xtable(tabulka1, caption = "Numbers of smokers and non-smokers in the dataset with and without cancer",
-             digits = 1, type = "latex"), file = "table1.tex")
+             digits = 0, type = "latex"), file = "table1.tex")
 
 #Oh, shit, it seems that our dataset is not unbiased random sample from population of 
 #lung-cancer patients, as 80% to 90% of lung cancer cases are associated with smoking.

@@ -26,7 +26,9 @@ for (i in 3:ncol(data)){
   print(levels(data[,i]))
 }
 
-data$LUNG_CANCER <- ifelse(data$LUNG_CANCER == "YES", 1,0) #converts YES or NO to numeric
+#data$LUNG_CANCER <- ifelse(data$LUNG_CANCER == "YES", 1,0) #converts YES or NO to numeric
+#data$LUNG_CANCER <- as.integer(data$LUNG_CANCER)
+
 data$LUNG_CANCER %>% #checks what class is the variable for cancer
   class()
 data %>% #counts number of observations with and without cancer
@@ -129,7 +131,7 @@ fmla4 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity4, collapse= "+"))
 model4 <- glm(fmla4, data = data, family = binomial(link = "logit")) #model with interactions
 summary(model4)
 
-
+predict(model4, data, type = "response") %>% summary()
 
 
 

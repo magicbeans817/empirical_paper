@@ -41,6 +41,12 @@ data %>%
 tabulka <- data %>%
   count(SMOKING, LUNG_CANCER)
 
+data %>%
+  count(SMOKING, YELLOW_FINGERS, LUNG_CANCER)
+
+data %>%
+  count(YELLOW_FINGERS, LUNG_CANCER)
+
 #print the table, so we can put it in the paper
 #Tajna myskavec na delani ala texovych tabulek
 #install.packages(xtable)
@@ -53,6 +59,7 @@ tabulka1 <- as.data.frame(tabulka1)
 tabulka1
 print(xtable(tabulka1, caption = "Numbers of smokers and non-smokers in the dataset with and without cancer",
              digits = 0, type = "latex"), file = "table1.tex")
+
 
 #Oh, shit, it seems that our dataset is not unbiased random sample from population of 
 #lung-cancer patients, as 80% to 90% of lung cancer cases are associated with smoking.
@@ -71,7 +78,7 @@ print(xtable(tabulka1, caption = "Numbers of smokers and non-smokers in the data
 #Therefore we choose logit, as it has fatter tails and is better at modelling outliers.
 
 #Let's create formula for our model:
-flipitydopity <- c("GENDER","AGE", "SMOKING","YELLOW_FINGERS","ANXIETY","PEER_PRESSURE",
+flipitydopity <- c("GENDER","AGE", "SMOKING","ANXIETY","PEER_PRESSURE","YELLOW_FINGERS",
                    "CHRONIC.DISEASE","FATIGUE","ALLERGY","WHEEZING","ALCOHOL.CONSUMING",
                    "COUGHING","SHORTNESS.OF.BREATH","SWALLOWING.DIFFICULTY","CHEST.PAIN")
 
@@ -89,11 +96,11 @@ summary(model1) #summary
 #in matter of having cancer. Also anxiety might be connected to lung cancer, however it makes
 #sense that this implication is not strong, asmuch larger share of population suffers
 #from anxiety than from lung cancer.
-#Also multicollinearity between e.g. smoking and yellow fingers
+#Also smoking being confounding factor in terms of lung cancer and yellow fingers variable
 
 
 #Lets make a vector of variables we will exclude:
-exclude <- c("ANXIETY","WHEEZING","SHORTNESS.OF.BREATH","CHEST.PAIN","GENDER","AGE")
+exclude <- c("ANXIETY","WHEEZING","SHORTNESS.OF.BREATH","CHEST.PAIN","GENDER","AGE","ALCOHOL.CONSUMING")
 flipitydopity2 <- flipitydopity[!flipitydopity %in% exclude]
 flipitydopity2
 
@@ -108,14 +115,25 @@ summary(model2)
 
 #Lets add interactions:
 interactions <- c()
-#interactions <- c("SMOKING:YELLOW_FINGERS"#,#"SMOKING:PEER_PRESSURE",
-                  #"SMOKING:ALCOHOL.CONSUMING","SMOKING:COUGHING"#,
-                  #"SMOKING:SWALLOWING.DIFFICULTY"#,"CHRONIC.DISEASE:FATIGUE"
-                  #)
+interactions <- c("SMOKING:COUGHING","CHRONIC.DISEASE:FATIGUE")
 flipitydopity3 <- c(flipitydopity2, interactions)
 fmla3 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity3, collapse= "+")))
 model3 <- glm(fmla3, data = data, family = binomial(link = "logit")) #model with interactions
 summary(model3)
+
+#Interesting... what if we take out smoking?
+exclude2 <- c("SMOKING")
+flipitydopity4 <- c(flipitydopity2, interactions)
+flipitydopity4 <- flipitydopity4[!flipitydopity4 %in% exclude2]
+fmla4 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity4, collapse= "+")))
+model4 <- glm(fmla4, data = data, family = binomial(link = "logit")) #model with interactions
+summary(model4)
+
+
+
+
+
+
 
 #DAVIDE, TOHLE JE V PRDELI, TA DATA AZ DOTED ANI V JENDOM OHLEDU NEFUNGOVALA TAK,
 #JAK BY MELA. a DO TOHO VSEHO JA MOC NEROZUMIM EKONOMETRII

@@ -63,7 +63,7 @@ print(xtable(tabulka1, caption = "Numbers of smokers and non-smokers in the data
              digits = 0, type = "latex"), file = "table1.tex")
 
 
-#Oh, shit, it seems that our dataset is not unbiased random sample from population of 
+#Oh no, it seems that our dataset is not unbiased random sample from population of 
 #lung-cancer patients, as 80% to 90% of lung cancer cases are associated with smoking.
 #What now then? I believe, that we can continue to work nevertheless, because this is
 #sample of people from population who fill out online questionnare. There are various possible
@@ -91,14 +91,16 @@ fmla
 model1 <- glm(fmla, data = data, family = binomial(link = "logit")) #model
 summary(model1) #summary
 
-#Some of our variables did not prove themselves to be significant.
-#However, many of these variables are connected to each other, therefore we will now consider
-#adjusting our model and adding interactions between variables. We can also substract several
-#variables as insignificant. For example, gender does not seem to play a significant role
-#in matter of having cancer. Also anxiety might be connected to lung cancer, however it makes
-#sense that this implication is not strong, asmuch larger share of population suffers
-#from anxiety than from lung cancer.
-#Also smoking being confounding factor in terms of lung cancer and yellow fingers variable
+'''
+Some of our variables did not prove themselves to be significant.
+However, many of these variables are connected to each other, therefore we will now consider
+adjusting our model and adding interactions between variables. We can also substract several
+variables as insignificant. For example, gender does not seem to play a significant role
+in matter of having cancer. Also anxiety might be connected to lung cancer, however it makes
+sense that this implication is not strong, asmuch larger share of population suffers
+from anxiety than from lung cancer.
+Also smoking being confounding factor in terms of lung cancer and yellow fingers variable
+'''
 
 
 #Lets make a vector of variables we will exclude:
@@ -131,10 +133,33 @@ fmla4 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity4, collapse= "+"))
 model4 <- glm(fmla4, data = data, family = binomial(link = "logit")) #model with interactions
 summary(model4)
 
-predict(model4, data, type = "response") %>% summary()
+data$model4_pred <- predict(model4, data, type = "response")
 
 
+#install.packages("pROC") #package pro AUC a ROC
+library(pROC)
 
+ROC <- roc(data$LUNG_CANCER, data$model4_pred)
+
+# Plot the ROC curve
+plot(ROC, col = "blue")
+
+# Calculate the area under the curve (AUC)
+auc(ROC)
+
+#according to this, we can make the treshold
+treshold <- 0.75
+#we can add new column with diagnosis as a string
+data <- data %>%
+  mutate(DIAGNOSIS = ifelse(model4_pred < treshold, "NO","YES"))
+data$DIAGNOSIS <- data$DIAGNOSIS %>% as.factor()
+data$DIAGNOSIS %>% is.factor()
+
+#install.packages(caret)
+#install.packages(e1071)
+library(caret)
+library(e1071)
+confusionMatrix(data$DIAGNOSIS, data$LUNG_CANCER, positive = "YES")
 
 
 #DAVIDE, TOHLE JE V PRDELI, TA DATA AZ DOTED ANI V JENDOM OHLEDU NEFUNGOVALA TAK,

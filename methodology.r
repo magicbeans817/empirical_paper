@@ -50,7 +50,7 @@ data %>%
   count(YELLOW_FINGERS, LUNG_CANCER)
 
 #print the table, so we can put it in the paper
-#Tajna myskavec na delani ala texovych tabulek
+#magie na konvertovani matic, datatables a dataframes do texovych tabulek
 #install.packages(xtable)
 library(xtable)
 tabulka <- as.matrix(tabulka)
@@ -65,12 +65,10 @@ print(xtable(tabulka1, caption = "Numbers of smokers and non-smokers in the data
 
 #Oh no, it seems that our dataset is not unbiased random sample from population of 
 #lung-cancer patients, as 80% to 90% of lung cancer cases are associated with smoking.
-#What now then? I believe, that we can continue to work nevertheless, because this is
-#sample of people from population who fill out online questionnare. There are various possible
-#explanations for why these people are not and even cannot be random sample of patients
-#with lung cancer. However, I believe we can still use the data, only the predictive
-#power of our model will not be general. It will be associated with specific subsample
-#of cancer patients.
+#What now then? I believe, that we can continue to work nevertheless, because we create the model
+#so that it has strong predictive power, not explanatory power. Better papers explaining factors
+#behind lung cancer have estimated. However, predicting lung cancer seems much more interesting and yet
+#not so mainstream (although it is becoming mainstream)
 
 #SECTION 2 ################################################################################
 
@@ -93,13 +91,12 @@ summary(model1) #summary
 
 '''
 Some of our variables did not prove themselves to be significant.
-However, many of these variables are connected to each other, therefore we will now consider
+However, some of these variables may connected to each other, therefore we will now consider
 adjusting our model and adding interactions between variables. We can also substract several
 variables as insignificant. For example, gender does not seem to play a significant role
 in matter of having cancer. Also anxiety might be connected to lung cancer, however it makes
-sense that this implication is not strong, asmuch larger share of population suffers
-from anxiety than from lung cancer.
-Also smoking being confounding factor in terms of lung cancer and yellow fingers variable
+sense that this implication is not strong, as much larger share of population suffers
+from anxiety than from lung cancer. The implication may be strong from only one side.
 '''
 
 
@@ -133,7 +130,28 @@ fmla4 <- as.formula(paste("LUNG_CANCER ~", paste(flipitydopity4, collapse= "+"))
 model4 <- glm(fmla4, data = data, family = binomial(link = "logit")) #model with interactions
 summary(model4)
 
+
 data$model4_pred <- predict(model4, data, type = "response")
+data$binary <- ifelse(data$LUNG_CANCER == "YES",1,0)
+
+#install.packages("ResourceSelection")
+library(ResourceSelection) #we will check Hosmer-Lemeschov test for goodness of fit
+hl <- hoslem.test(data$binary, data$model4_pred, g=10)
+hl
+
+x <- c()
+for (i in 5:15) {
+  print(hoslem.test(data$binary, data$model4_pred, g=i)$p.value)
+  x <- rbind(hoslem.test(data$binary, data$model4_pred, g=i)$p.value,x)
+  #x[i-4,1] <- hoslem.test(data$binary, data$model4_pred, g=i)$p.value
+}
+x
+x <- rev(x)
+x
+
+hl_pvalues <- matrix(c(5:15,x), byrow = FALSE, nrow = length(x), ncol = 2,
+                     dimnames = list(c(5:15),c("Number of groups", "p-values of HL test")))
+hl_pvalues
 
 
 #install.packages("pROC") #package pro AUC a ROC
@@ -147,8 +165,8 @@ plot(ROC, col = "blue")
 # Calculate the area under the curve (AUC)
 auc(ROC)
 
-#according to this, we can make the treshold
-treshold <- 0.75
+#according to this, we can make the threshold
+treshold <- 0.35
 #we can add new column with diagnosis as a string
 data <- data %>%
   mutate(DIAGNOSIS = ifelse(model4_pred < treshold, "NO","YES"))
@@ -159,50 +177,20 @@ data$DIAGNOSIS %>% is.factor()
 #install.packages(e1071)
 library(caret)
 library(e1071)
-confusionMatrix(data$DIAGNOSIS, data$LUNG_CANCER, positive = "YES")
+conmat <- confusionMatrix(data$DIAGNOSIS, data$LUNG_CANCER, positive = "YES")
+conmat
 
+#print the tables
+print(xtable(summary(model4), caption = "Summary of logit model",
+             digits = 3, type = "latex"), file = "summary_estimation.tex")
 
-#DAVIDE, TOHLE JE V PRDELI, TA DATA AZ DOTED ANI V JENDOM OHLEDU NEFUNGOVALA TAK,
-#JAK BY MELA. a DO TOHO VSEHO JA MOC NEROZUMIM EKONOMETRII
+#print the tables
+print(xtable(hl_pvalues, caption = "Hosmer-Lemeschov test, p-values",
+             digits = 3, type = "latex"), file = "hltest_pvalues.tex")
 
-
-
-
-
-
-
-
-
-#DONT RUN!!!!
-#dalsi moje hovna, co mozna pouziju
-predictions <- predict.glm(model2, data, type = "response" )
-sort(predictions)
-summary(predictions)
-
-install.packages("MASS")
-library(MASS)
-
-
-
-
-
-#Tohle jsou jen nejaky moje poznamky, co pak smazu
-
-install.packages("plm")
-library("plm")
-data("Cigar")
-data <- Cigar
-View(data)
-View(Cigar)
-library(dplyr)
-data %>%
-  filter(year == "90") %>%
-  arrange(state)
-data2 <- read.csv()
-
-
-
-
+#print the tables
+print(xtable(confmat, caption = "Confusion Matrix for classification threshold = 0.35", #nefunguje, napisu to texu sam
+             digits = 3, type = "latex"), file = "confusion_matrix.tex")
 
 
 
